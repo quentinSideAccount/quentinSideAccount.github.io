@@ -4,7 +4,7 @@ angular.module('nutrionixApp.index')
             getProfiles: function() {
                 let profiles = [];
                 $.ajax({
-                    url: "index/services/json/profiles.json",
+                    url: "app/index/services/json/profiles.json",
                     async: false,
                     success: function (response) {
                         profiles = response.profiles;
