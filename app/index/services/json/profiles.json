@@ -1,0 +1,35 @@
+{
+  "profiles":[
+  {
+    "name": "enfant",
+    "calMax": 1600
+  },
+  {
+    "name": "adolescent H",
+    "calMax": 2900
+  },
+  {
+    "name": "adolescent F",
+    "calMax": 2400
+  },
+  {
+    "name": "homme",
+    "calMax": 2800
+  },
+  {
+    "name": "femme",
+    "calMax": 2200
+  },
+  {
+    "name": "femme enceinte",
+    "calMax": 2400
+  },
+  {
+    "name": "personne agée H",
+    "calMax": 2000
+  },
+  {
+    "name": "personne agée F",
+    "calMax": 1800
+  }]
+}
