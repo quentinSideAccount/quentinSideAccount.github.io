@@ -58,3 +58,8 @@ md-input-container .md-errors-spacer{
 #numberField{
   width: 20%;
 }
+
+.disabledAutocomplete{
+  color: lightcoral;
+  font-size: 14px;
+}

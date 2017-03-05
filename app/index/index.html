@@ -2,12 +2,14 @@
     <h3>Bienvenue sur l'application du Projet JS Framework</h3>
 </md-toolbar>
 <div>
-    <md-select class="md-primary" name="profileSelect" id="profileSelect" ng-model="calMaxProfile" ng-change="update()" placeholder="Selectionner un profil">
-        <md-option ng-repeat="profile in profiles" value="{{profile.calMax}}">{{profile.name}}</md-option>
+    <md-select class="md-primary" name="profileSelect" id="profileSelect" ng-model="choiceProfile" ng-change="update()" placeholder="Selectionner un profil">
+        <md-option ng-repeat="profile in profiles" value="{{profile.name}}">{{profile.name}}</md-option>
     </md-select>
 </div>
+<p class="disabledAutocomplete" ng-if="selectedProfile.calMax == null">Veuillez choisir un profil avant de continuer</p>
 <div class="autocompleteFields" layout="row" layout-align="start" flex>
     <md-autocomplete
+            ng-disabled="selectedProfile.calMax == null"
             id="autocompleteField"
             md-no-cache="false"
             md-search-text="searchString"
@@ -32,13 +34,13 @@
 <md-tabs md-dynamic-height md-border-bottom class="md-primary" md-center-tabs="true" md-no-ink="true" md-no-ink-bar="true">
   <md-tab label="Votre Garde-Manger">
     <div class="displayInfos">
-        <div ng-class="{alerts: !(calMaxProfile == null || calRemaining == null  || calRemaining >= 0) }">
+        <div ng-class="{alerts: !(selectedProfile.calMax== null || calRemaining == null  || calRemaining >= 0) }">
             <div>
                 <span>Nombre de calories : {{totalCaloriesForEverything}} Kcal </span>
-                <span ng-hide="!calMaxProfile">/ {{calMaxProfile}} Kcal</span>
+                <span ng-hide="!selectedProfile.calMax">/ {{selectedProfile.calMax}} Kcal</span>
             </div>
-            <div ng-hide="calRemaining == null || calRemaining <= 0 ">Il vous reste {{calRemaining}} Kcal</div>
-            <div  ng-hide="calMaxProfile == null || calRemaining == null  || calRemaining >= 0 ">Attention : Vous avez dépassé votre quota de calories </div>
+            <div ng-hide="selectedProfile.calMax == null ||calRemaining == null || calRemaining <= 0 ">Il vous reste {{calRemaining}} Kcal</div>
+            <div  ng-hide="selectedProfile.calMax == null || calRemaining == null  || calRemaining >= 0 ">Attention : Vous avez dépassé votre quota de calories </div>
         </div>
         <div ng-class="{alerts: totalSelForEverything >= 5}">
             <div>Quantité de sel : {{totalSelForEverything}} g</div>

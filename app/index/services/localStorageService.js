@@ -2,7 +2,7 @@
  * Service permettant de stocker et récupérer le garde manger
  */
 angular.module('nutrionixApp.index')
-    .factory('gardeMangerService',['$localStorage', function($localStorage) {
+    .factory('localStorageService',['$localStorage', function($localStorage) {
         return {
             /**
              * Fonction permettant de stocker le garde manger dans le localStorage
@@ -19,6 +19,24 @@ angular.module('nutrionixApp.index')
              */
             getData: function() {
                 return $localStorage.gardeManger;
+            },
+
+            /**
+             * Fonction permettant de stocker le profil de l'utilisateur dans le localStorage
+             * @param val
+             * @returns {gardeMangerService}
+             */
+            setProfile: function(val){
+                $localStorage.profile = val;
+                return this;
+            },
+
+            /**
+             * Fonction permettant de récupéré le profil dans le localStorage
+             * @returns {*}
+             */
+            getProfile: function(){
+               return $localStorage.profile;
             }
         };
     }]);

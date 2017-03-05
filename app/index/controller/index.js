@@ -12,7 +12,7 @@ angular.module('nutrionixApp.index', ['ngRoute'])
             controller: 'IndexCtrl'
         });
     }])
-    .controller('IndexCtrl', ['$scope','$http', 'appId', 'appKey','profileService','productsService','gardeMangerService' ,function($scope, $http,appId,appKey,profileService,productsService,gardeMangerService) {
+    .controller('IndexCtrl', ['$scope','$http', 'appId', 'appKey','profileService','productsService','localStorageService' ,function($scope, $http,appId,appKey,profileService,productsService,localStorageService) {
         $scope.searchString = "";
         $scope.totalCaloriesForEverything = 0;
         $scope.totalSelForEverything = 0;
@@ -20,7 +20,7 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         $scope.gardeManger = [];
         $scope.calMax = 50000;
         $scope.profiles = null;
-        $scope.calMaxProfile = null;
+        $scope.choiceProfile = null;
         $scope.calRemaining = null;
 
         /**
@@ -29,11 +29,15 @@ angular.module('nutrionixApp.index', ['ngRoute'])
          */
 
         $scope.init = function(){
-          $scope.gardeManger = gardeMangerService.getData();
+          $scope.gardeManger = localStorageService.getData();
+          $scope.selectedProfile = localStorageService.getProfile();
           if($scope.gardeManger != null) {
               $scope.getTotalKcal();
           }else{
               $scope.gardeManger = [];
+          }
+          if($scope.selectedProfile != null){
+              $scope.choiceProfile = $scope.selectedProfile.name;
           }
         };
 
@@ -70,7 +74,7 @@ angular.module('nutrionixApp.index', ['ngRoute'])
           item.quantite = 1;
           $scope.getKcalValueForItem(item);
           $scope.gardeManger.push(item);
-          gardeMangerService.setData($scope.gardeManger);
+          localStorageService.setData($scope.gardeManger);
           $scope.getTotalKcal();
           $scope.searchString = "";
 
@@ -86,7 +90,7 @@ angular.module('nutrionixApp.index', ['ngRoute'])
           item.quantite++;
           $scope.getKcalValueForItem(item);
           $scope.getTotalKcal();
-          gardeMangerService.setData($scope.gardeManger);
+          localStorageService.setData($scope.gardeManger);
 
         };
 
@@ -100,7 +104,7 @@ angular.module('nutrionixApp.index', ['ngRoute'])
             item.quantite--;
             $scope.getKcalValueForItem(item);
             $scope.getTotalKcal();
-            gardeMangerService.setData($scope.gardeManger);
+            localStorageService.setData($scope.gardeManger);
 
         };
 
@@ -113,7 +117,7 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         $scope.removeItem = function(item){
           $scope.gardeManger.splice(item,1);
           $scope.getTotalKcal();
-          gardeMangerService.setData($scope.gardeManger);
+          localStorageService.setData($scope.gardeManger);
 
         };
 
@@ -147,7 +151,7 @@ angular.module('nutrionixApp.index', ['ngRoute'])
             $scope.totalCaloriesForEverything = Math.round($scope.totalCaloriesForEverything*100)/100;
             $scope.totalSelForEverything = Math.round($scope.totalSelForEverything*100)/100;
             $scope.totalSaturedFatForEverything = Math.round($scope.totalSaturedFatForEverything*100)/100;
-            $scope.calRemaining = $scope.calMaxProfile - $scope.totalCaloriesForEverything;
+            if($scope.selectedProfile != undefined) $scope.calRemaining = $scope.selectedProfile.calMax - $scope.totalCaloriesForEverything;
         };
 
 
@@ -155,7 +159,12 @@ angular.module('nutrionixApp.index', ['ngRoute'])
          * Fonction mettant à jour le profile choisi par l'utilisateur
          */
         $scope.update = function(){
-            $scope.calRemaining = $scope.calMaxProfile - $scope.totalCaloriesForEverything;
+            $scope.selectedProfile  = $scope.profiles.filter(function (obj) {
+                return obj.name == $scope.choiceProfile;
+            });
+            $scope.selectedProfile = $scope.selectedProfile[0];
+            localStorageService.setProfile($scope.selectedProfile);
+            $scope.calRemaining = $scope.selectedProfile.calMax - $scope.totalCaloriesForEverything;
         };
 
         $scope.getProfiles();
