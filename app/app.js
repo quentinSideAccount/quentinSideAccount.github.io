@@ -6,7 +6,8 @@ angular.module('nutrionixApp', [
   'nutrionixApp.view1',
   'nutrionixApp.view2',
   'nutrionixApp.index',
-  'nutrionixApp.version'
+  'nutrionixApp.version',
+  'ngMaterial'
 ]).
 config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
   $locationProvider.hashPrefix('!');

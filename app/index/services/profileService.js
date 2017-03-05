@@ -1,3 +1,9 @@
+/**
+ * Service permettant de récupérer les différents profils utilisateurs
+ * Basés sur les données fournies dans l'énoncés
+ * Récupérés à l'aide d'un fichier JSON
+ */
+
 angular.module('nutrionixApp.index')
     .factory('profileService', function(){
         let profileService = {

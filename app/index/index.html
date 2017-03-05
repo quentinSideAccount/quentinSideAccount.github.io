@@ -1,36 +1,54 @@
 <p>Bienvenue sur l'application du Projet JS Framework</p>
-
 <div>
-    <label for="profileSelect">Selectionner un profile : </label>
-    <select name="profileSelect" id="profileSelect" ng-model="calMaxProfile" ng-change="update()">
-        <option ng-repeat="profile in profiles" value="{{profile.calMax}}">{{profile.name}}</option>
-    </select>
+    <md-select name="profileSelect" id="profileSelect" ng-model="calMaxProfile" ng-change="update()" placeholder="Selectionner un profil">
+        <md-option ng-repeat="profile in profiles" value="{{profile.calMax}}">{{profile.name}}</md-option>
+    </md-select>
 </div>
 <div>
-    <input type="text" class="search" ng-model="searchString" ng-change="getProducts()" placeholder="Rechercher un produit" ng-disabled="typeof(calMax) === 'number'"/>
-    <label>Nombre de calories max souhaitées : <input type="number" ng-model="calMax" value="50000"/></label>
-    <div ng-if="searchResults.length > 0  && searchString.length > 2" ng-repeat="(i, data) in searchResults">
-        <p ng-click="addToGardeManger(data)">{{ data.fields.item_name}} | {{data.fields.brand_name}}</p>
-    </div>
+    <md-input-container>
+        <label>Calories max</label>
+        <input type="number" ng-model="calMax" value="50000"/>
+    </md-input-container>
+    <md-autocomplete
+            md-no-cache="false"
+            md-search-text="searchString"
+            md-selected-item-change="addToGardeManger(item)"
+            md-items="item in getProducts()"
+            md-item-text="item.fields.item_name"
+            md-min-length="2"
+            md-delay="300"
+            placeholder="Rechercher un produit">
+        <md-item-template>
+            <span>{{item.fields.item_name}}</span>
+        </md-item-template>
+        <md-not-found>
+            Produit non trouvé
+        </md-not-found>
+    </md-autocomplete>
 </div>
 <h3>Votre Garde-Manger</h3>
-<span>Nombre de calories : {{totalCaloriesForEverything}} Kcal </span>
-<span ng-hide="!calMaxProfile">/ {{calMaxProfile}} Kcal</span>
-<div>Quantité de sel : {{totalSelForEverything}} g</div>
-<div>Quantité de graisses saturées : {{totalSaturedFatForEverything}} g</div>
-<div ng-hide="calRemaining == null || calRemaining <= 0 ">Il vous reste {{calRemaining}} Kcal</div>
-<div ng-hide="calRemaining == null  || calRemaining >= 0 ">Attention : Vous avez dépassé votre quota de calories </div>
-<div ng-hide="totalSelForEverything <= 5">Attention : Quantité de sel supérieure à la limite recommandée</div>
-
+<div class="displayInfos">
+    <div>
+        <span>Nombre de calories : {{totalCaloriesForEverything}} Kcal </span>
+        <span ng-hide="!calMaxProfile">/ {{calMaxProfile}} Kcal</span>
+    </div>
+    <div>Quantité de sel : {{totalSelForEverything}} g</div>
+    <div>Quantité de graisses saturées : {{totalSaturedFatForEverything}} g</div>
+</div>
+<div class="alerts">
+    <div ng-hide="calRemaining == null || calRemaining <= 0 ">Il vous reste {{calRemaining}} Kcal</div>
+    <div ng-hide="calRemaining == null  || calRemaining >= 0 ">Attention : Vous avez dépassé votre quota de calories </div>
+    <div ng-hide="totalSelForEverything <= 5">Attention : Quantité de sel supérieure à la limite recommandée</div>
+</div>
 <div ng-if="gardeManger.length > 0" ng-repeat="(i,data) in gardeManger">
     <span class="gardeMangerItem">
-        <p>{{data.fields.item_name}}</p>
-        <p>Total Calories pour ce produit : {{data.totalCalories}} Kcal </p>
-        <p ng-if="data.totalSel">Total Sel pour ce produit : {{data.totalSel}} g</p>
-        <p ng-if="data.totalSaturedFat">Total Sel pour ce produit : {{data.totalSaturedFat}} g</p>
-        <button ng-click="addQuantite(data)">+</button>
-        <p>Quantité : {{data.quantite}}</p>
-        <button ng-click="removeQuantite(data)">-</button>
-        <button ng-click="removeItem(i)" >Supprimer le produit</button>
+        <span>{{data.fields.item_name}}</span>
+        <span>Total Calories : {{data.totalCalories}} Kcal </span>
+        <span ng-if="!!data.totalSel">Total Sel : {{data.totalSel}} g</span>
+        <span ng-if="!!data.totalSaturedFat">Total Graisses Saturées : {{data.totalSaturedFat}} g</span>
+        <md-button class="md-primary" ng-click="addQuantite(data)">+</md-button>
+        <span>Qte : {{data.quantite}}</span>
+        <md-button class="md-primary" ng-click="removeQuantite(data)">-</md-button>
+        <md-button ng-click="removeItem(i)" >Supprimer le produit</md-button>
     </span>
 </div>

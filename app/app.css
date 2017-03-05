@@ -28,3 +28,12 @@
   display: flex;
   justify-content: space-between;
 }
+
+.displayInfos{
+  display: flex;
+  justify-content: space-between;
+}
+
+.alerts{
+  background-color: red;
+}
