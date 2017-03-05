@@ -35,9 +35,26 @@
 }
 
 .alerts{
-  background-color: red;
+  background-color: lightsalmon;
 }
 
 .displayGardeManger{
   margin-top: 20px;
+}
+
+#autocompleteField{
+  width: 75%;
+  margin-right: 10px;
+}
+
+div.autocompleteFields{
+  align-items: center;
+}
+
+md-input-container .md-errors-spacer{
+  min-height: 0px !important;
+}
+
+#numberField{
+  width: 20%;
 }

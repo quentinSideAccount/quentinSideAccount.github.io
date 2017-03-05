@@ -3,11 +3,10 @@
 // Declare app level module which depends on views, and components
 angular.module('nutrionixApp', [
   'ngRoute',
-  'nutrionixApp.view1',
-  'nutrionixApp.view2',
   'nutrionixApp.index',
   'nutrionixApp.version',
-  'ngMaterial'
+  'ngMaterial',
+  'ngStorage'
 ]).
 config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
   $locationProvider.hashPrefix('!');

@@ -12,9 +12,8 @@ angular.module('nutrionixApp.index', ['ngRoute'])
             controller: 'IndexCtrl'
         });
     }])
-    .controller('IndexCtrl', ['$scope','$http', 'appId', 'appKey','profileService','productsService','$q' ,function($scope, $http,appId,appKey,profileService,productsService,$q) {
+    .controller('IndexCtrl', ['$scope','$http', 'appId', 'appKey','profileService','productsService','gardeMangerService' ,function($scope, $http,appId,appKey,profileService,productsService,gardeMangerService) {
         $scope.searchString = "";
-        $scope.searchResults = {};
         $scope.totalCaloriesForEverything = 0;
         $scope.totalSelForEverything = 0;
         $scope.totalSaturedFatForEverything = 0;
@@ -25,10 +24,25 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         $scope.calRemaining = null;
 
         /**
-         * Fonction de récupération des produits
+         * Fonction de récupération des produits stockés en localStorage
+         * et initialisation des variables de contenant les données du garde manger
          */
 
+        $scope.init = function(){
+          $scope.gardeManger = gardeMangerService.getData();
+          if($scope.gardeManger != null) {
+              $scope.getTotalKcal();
+          }else{
+              $scope.gardeManger = [];
+          }
+        };
+
+        /**
+         * Fonction faisant appel à l'API Nutrionix et retournant un tableau de résultats
+         * @returns {Promise.<TResult>|*}
+         */
         $scope.getProducts = function(){
+           $scope.calMax = isNaN(parseInt($scope.calMax,10)) ?  50000 : $scope.calMax;
            return productsService.getProducts($scope.searchString,$scope.calMax)
                 .then(
                     function (res) {
@@ -50,13 +64,13 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         /**
          * Ajout d'un produit au garde manger
          * Et initialisation de sa quantité
-         * @param item
+         * @param item (produit)
          */
         $scope.addToGardeManger = function(item){
-          console.log(item);
           item.quantite = 1;
           $scope.getKcalValueForItem(item);
           $scope.gardeManger.push(item);
+          gardeMangerService.setData($scope.gardeManger);
           $scope.getTotalKcal();
           $scope.searchString = "";
 
@@ -65,54 +79,60 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         /**
          * Fonction d'ajout d'une quantité
          * Et appel à des fonctions pour tenir à jour les valeurs
-         * @param item
+         * @param item (produit)
          */
 
         $scope.addQuantite = function(item){
           item.quantite++;
           $scope.getKcalValueForItem(item);
           $scope.getTotalKcal();
+          gardeMangerService.setData($scope.gardeManger);
 
         };
 
         /**
          * Fonction du retrait d'une quantité
          * Et appel à des fonctions pour tenir à jour les valeurs
-         * @param item
+         * @param item (produit)
          */
 
         $scope.removeQuantite = function(item){
             item.quantite--;
             $scope.getKcalValueForItem(item);
             $scope.getTotalKcal();
+            gardeMangerService.setData($scope.gardeManger);
+
         };
 
 
         /**
          * Fonction pour retirer un produit du garde manger
          * et appel de la fonction pour tenir à jour les valeurs
-         * @param i
+         * @param item (produit)
          */
-        $scope.removeItem = function(i){
-          $scope.gardeManger.splice(i,1);
+        $scope.removeItem = function(item){
+          $scope.gardeManger.splice(item,1);
           $scope.getTotalKcal();
+          gardeMangerService.setData($scope.gardeManger);
+
         };
 
 
         /**
          * Calcule le nombre de calories, sel et graisses saturées pour un item
-         * @param item
+         * @param item (produit)
          */
         $scope.getKcalValueForItem = function(item){
-            item.totalCalories = item.quantite * item.fields.nf_calories;
-            item.totalSel = (typeof(item.fields.nf_sodium) === undefined ) ? null : item.quantite * item.fields.nf_sodium/1000;
-            item.totalSaturedFat = (typeof(item.fields.nf_saturated_fat) === undefined ) ? null : item.quantite * item.fields.nf_saturated_fat;
+            //Math.round(value * 100) / 100
+
+            item.totalCalories = Math.round((item.quantite * item.fields.nf_calories) *100)/100;
+            item.totalSel = (typeof(item.fields.nf_sodium) === undefined ) ? null : Math.round((item.quantite * item.fields.nf_sodium/1000)*100)/100;
+            item.totalSaturedFat = (typeof(item.fields.nf_saturated_fat) === undefined ) ? null : Math.round((item.quantite * item.fields.nf_saturated_fat)*100)/100;
 
         };
 
         /**
          * Calcule le nombre de calories, sel et graisses saturées pour tout le garde manger
-         * @param item
          */
         $scope.getTotalKcal = function(){
             $scope.calRemaining = 0;
@@ -124,6 +144,9 @@ angular.module('nutrionixApp.index', ['ngRoute'])
                 if(obj.totalSel != null) $scope.totalSelForEverything += obj.totalSel;
                 if(obj.totalSaturedFat != null) $scope.totalSaturedFatForEverything += obj.totalSaturedFat;
             });
+            $scope.totalCaloriesForEverything = Math.round($scope.totalCaloriesForEverything*100)/100;
+            $scope.totalSelForEverything = Math.round($scope.totalSelForEverything*100)/100;
+            $scope.totalSaturedFatForEverything = Math.round($scope.totalSaturedFatForEverything*100)/100;
             $scope.calRemaining = $scope.calMaxProfile - $scope.totalCaloriesForEverything;
         };
 
@@ -136,4 +159,5 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         };
 
         $scope.getProfiles();
+        $scope.init();
     }]);

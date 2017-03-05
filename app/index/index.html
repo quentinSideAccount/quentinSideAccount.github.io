@@ -1,15 +1,14 @@
-<h1>Bienvenue sur l'application du Projet JS Framework</h1>
+<md-toolbar ng-if="true">
+    <h3>Bienvenue sur l'application du Projet JS Framework</h3>
+</md-toolbar>
 <div>
-    <md-select name="profileSelect" id="profileSelect" ng-model="calMaxProfile" ng-change="update()" placeholder="Selectionner un profil">
+    <md-select class="md-primary" name="profileSelect" id="profileSelect" ng-model="calMaxProfile" ng-change="update()" placeholder="Selectionner un profil">
         <md-option ng-repeat="profile in profiles" value="{{profile.calMax}}">{{profile.name}}</md-option>
     </md-select>
 </div>
-<div>
-    <md-input-container>
-        <label>Calories max</label>
-        <input type="number" ng-model="calMax" value="50000"/>
-    </md-input-container>
+<div class="autocompleteFields" layout="row" layout-align="start" flex>
     <md-autocomplete
+            id="autocompleteField"
             md-no-cache="false"
             md-search-text="searchString"
             md-selected-item-change="addToGardeManger(item)"
@@ -17,7 +16,7 @@
             md-item-text="item.fields.item_name"
             md-min-length="2"
             md-delay="300"
-            placeholder="Rechercher un produit">
+            md-floating-label="Rechercher et ajouter un produit">
         <md-item-template>
             <span>{{item.fields.item_name}}</span>
         </md-item-template>
@@ -25,41 +24,51 @@
             Produit non trouvé
         </md-not-found>
     </md-autocomplete>
+    <md-input-container id="numberField" name="numberField">
+        <label>Calories max</label>
+        <input type="number" ng-model="calMax" value="50000"/>
+    </md-input-container>
 </div>
-<h3>Votre Garde-Manger</h3>
-<div class="displayInfos">
-    <div>
-        <span>Nombre de calories : {{totalCaloriesForEverything}} Kcal </span>
-        <span ng-hide="!calMaxProfile">/ {{calMaxProfile}} Kcal</span>
+<md-tabs md-dynamic-height md-border-bottom class="md-primary" md-center-tabs="true" md-no-ink="true" md-no-ink-bar="true">
+  <md-tab label="Votre Garde-Manger">
+    <div class="displayInfos">
+        <div ng-class="{alerts: !(calMaxProfile == null || calRemaining == null  || calRemaining >= 0) }">
+            <div>
+                <span>Nombre de calories : {{totalCaloriesForEverything}} Kcal </span>
+                <span ng-hide="!calMaxProfile">/ {{calMaxProfile}} Kcal</span>
+            </div>
+            <div ng-hide="calRemaining == null || calRemaining <= 0 ">Il vous reste {{calRemaining}} Kcal</div>
+            <div  ng-hide="calMaxProfile == null || calRemaining == null  || calRemaining >= 0 ">Attention : Vous avez dépassé votre quota de calories </div>
+        </div>
+        <div ng-class="{alerts: totalSelForEverything >= 5}">
+            <div>Quantité de sel : {{totalSelForEverything}} g</div>
+            <div ng-hide="totalSelForEverything <= 5">Attention : Quantité de sel supérieure à la limite recommandée</div>
+        </div>
+        <div>Quantité de graisses saturées : {{totalSaturedFatForEverything}} g</div>
     </div>
-    <div>Quantité de sel : {{totalSelForEverything}} g</div>
-    <div>Quantité de graisses saturées : {{totalSaturedFatForEverything}} g</div>
-</div>
-<div class="alerts">
-    <div ng-hide="calRemaining == null || calRemaining <= 0 ">Il vous reste {{calRemaining}} Kcal</div>
-    <div ng-hide="calMaxProfile == null || calRemaining == null  || calRemaining >= 0 ">Attention : Vous avez dépassé votre quota de calories </div>
-    <div ng-hide="totalSelForEverything <= 5">Attention : Quantité de sel supérieure à la limite recommandée</div>
-</div>
 
-<div layout="row" layout-align="start" layout-wrap="wrap" class="displayGardeManger" ng-if="gardeManger.length > 0"  flex>
-        <md-card ng-repeat="(i,data) in gardeManger">
-            <md-card-title>
-                <md-card-title-text>
-                    <span>{{data.fields.item_name}}</span>
-                </md-card-title-text>
-            </md-card-title>
-            <md-card-content layout="column" layout-align="start none">
-                <div>Total Calories : {{data.totalCalories}} Kcal </div>
-                <div ng-if="!!data.totalSel">Total Sel : {{data.totalSel}} g</div>
-                <div ng-if="!data.totalSel">Total Sel : 0 g</div>
-                <div ng-if="!!data.totalSaturedFat">Total Graisses Saturées : {{data.totalSaturedFat}} g</div>
-                <div ng-if="!data.totalSaturedFat">Total Graisses Saturées : 0 g</div>
-                <div>Qte : {{data.quantite}}</div>
-            </md-card-content>
-            <md-card-actions layout="row" layout-align="start">
-                <md-button class="md-primary" ng-click="addQuantite(data)">+</md-button>
-                <md-button class="md-primary" ng-click="removeQuantite(data)">-</md-button>
-                <md-button class="md-primary" ng-click="removeItem(i)" >Supprimer le produit</md-button>
-            </md-card-actions>
-        </md-card>
-</div>
+
+    <div layout="row" layout-align="start" layout-wrap="wrap" class="displayGardeManger" ng-if="gardeManger.length > 0"  flex>
+            <md-card ng-repeat="(i,data) in gardeManger">
+                <md-card-title>
+                    <md-card-title-text>
+                        <span>{{data.fields.item_name}}</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content layout="column" layout-align="start none">
+                    <div>Total Calories : {{data.totalCalories}} Kcal </div>
+                    <div ng-if="!!data.totalSel">Total Sel : {{data.totalSel}} g</div>
+                    <div ng-if="!data.totalSel">Total Sel : 0 g</div>
+                    <div ng-if="!!data.totalSaturedFat">Total Graisses Saturées : {{data.totalSaturedFat}} g</div>
+                    <div ng-if="!data.totalSaturedFat">Total Graisses Saturées : 0 g</div>
+                    <div>Qte : {{data.quantite}}</div>
+                </md-card-content>
+                <md-card-actions layout="row" layout-align="start">
+                    <md-button class="md-primary" ng-click="addQuantite(data)">+</md-button>
+                    <md-button class="md-primary" ng-click="removeQuantite(data)">-</md-button>
+                    <md-button class="md-primary" ng-click="removeItem(i)" >Supprimer le produit</md-button>
+                </md-card-actions>
+            </md-card>
+    </div>
+  </md-tab>
+</md-tabs>
