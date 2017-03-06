@@ -2,6 +2,7 @@
 
 /**
  * Controller pour la page index
+ * Gére les actions sur le profil, le garde-manger ainsi que les produits de l'utilisateur
  */
 
 angular.module('nutrionixApp.index', ['ngRoute'])
@@ -13,22 +14,52 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         });
     }])
     .controller('IndexCtrl', ['$scope','$http', 'appId', 'appKey','profileService','productsService','localStorageService' ,function($scope, $http,appId,appKey,profileService,productsService,localStorageService) {
+
+        /**
+         * Chaine utilisée pour la recherche de produit
+         */
         $scope.searchString = "";
+
+        /**
+         * Indicateurs globaux utilisés pour le garde-manger
+         */
         $scope.totalCaloriesForEverything = 0;
         $scope.totalSelForEverything = 0;
         $scope.totalSaturedFatForEverything = 0;
+
+        /**
+         * Initialisation du garde-manger
+         */
         $scope.gardeManger = [];
+
+        /**
+         * Initialisation du nombre de calories maximum utilisé pour la recherche
+         */
         $scope.calMax = 50000;
+
+        /**
+         * Variable contenant les profils récupérés par le ProfileService
+         */
         $scope.profiles = null;
+
+        /**
+         * Valeur du champ select de l'interface utilisateur utilisé pour affecter le profil plus tard
+         */
         $scope.choiceProfile = null;
+
+        /**
+         * Valeur indiquant le nombre de calories restantes en fonction du profil choisi
+         */
         $scope.calRemaining = null;
 
         /**
-         * Fonction de récupération des produits stockés en localStorage
+         * Fonction de récupération des produits et du profil stockés en localStorage
          * et initialisation des variables de contenant les données du garde manger
+         * Cette fonction récupére aussi les différents profils pour qu'ils soient injectés dans la vue
          */
 
         $scope.init = function(){
+          $scope.getProfiles();
           $scope.gardeManger = localStorageService.getData();
           $scope.selectedProfile = localStorageService.getProfile();
           if($scope.gardeManger != null) {
@@ -42,8 +73,10 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         };
 
         /**
-         * Fonction faisant appel à l'API Nutrionix et retournant un tableau de résultats
-         * @returns {Promise.<TResult>|*}
+         * Fonction faisant appel à l'API Nutrionix à l'aide du productsService et retournant un tableau de résultats
+         * Elle permet aussi de vérifier si la saisie par l'utilisateur du champ des calories max est véritablement un nombre ou non
+         * Sinon on set 50000 le nombre par défaut
+         *
          */
         $scope.getProducts = function(){
            $scope.calMax = isNaN(parseInt($scope.calMax,10)) ?  50000 : $scope.calMax;
@@ -67,7 +100,10 @@ angular.module('nutrionixApp.index', ['ngRoute'])
 
         /**
          * Ajout d'un produit au garde manger
-         * Et initialisation de sa quantité
+         * Et ajout et l'initialisation de l'attribut quantité de chaque produit
+         * Appel aux fonctions de : - calcul des indicateurs du produit
+         *                          - Actualisation de l'état du garde-manger dans le localStorage
+         *                          - Calcul des indicateurs globaux du garde-manger
          * @param item (produit)
          */
         $scope.addToGardeManger = function(item){
@@ -81,8 +117,10 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         };
 
         /**
-         * Fonction d'ajout d'une quantité
-         * Et appel à des fonctions pour tenir à jour les valeurs
+         * Fonction d'ajout d'une unité de quantité au produit passé en paramètre
+         * Appel aux fonctions de : - calcul des indicateurs du produit
+         *                          - Actualisation de l'état du garde-manger dans le localStorage
+         *                          - Calcul des indicateurs globaux du garde-manger
          * @param item (produit)
          */
 
@@ -95,8 +133,10 @@ angular.module('nutrionixApp.index', ['ngRoute'])
         };
 
         /**
-         * Fonction du retrait d'une quantité
-         * Et appel à des fonctions pour tenir à jour les valeurs
+         * Fonction du retrait d'une unité de quantité au produit passé en paramètre
+         * Appel aux fonctions de : - calcul des indicateurs du produit
+         *                          - Actualisation de l'état du garde-manger dans le localStorage
+         *                          - Calcul des indicateurs globaux du garde-manger
          * @param item (produit)
          */
 
@@ -110,8 +150,9 @@ angular.module('nutrionixApp.index', ['ngRoute'])
 
 
         /**
-         * Fonction pour retirer un produit du garde manger
-         * et appel de la fonction pour tenir à jour les valeurs
+         * Fonction pour retirer le produit passé en paramètre au garde manger
+         * Appel aux fonctions de : - Actualisation de l'état du garde-manger dans le localStorage
+         *                          - Calcul des indicateurs globaux du garde-manger
          * @param item (produit)
          */
         $scope.removeItem = function(item){
@@ -123,11 +164,20 @@ angular.module('nutrionixApp.index', ['ngRoute'])
 
 
         /**
-         * Calcule le nombre de calories, sel et graisses saturées pour un item
+         * Calcule le nombre de calories, sel et graisses saturées pour un produit passé en paramètre
+         *
+         * Ajoute aussi les attributs totalCalories, totalSel et totalSaturedFat s'il ne sont pas présent pour l'item
+         * et permte de connaître la quantité de l'élément indiqué par la variable
+         * en fonction de la quantité du produit dans le garde-manger
+         *
+         * Comme tous les produits n'ont pas de sel ou de graisses saturées, les valeurs totalSel et totalSaturedFat sont placées à zero
+         *
+         * Le Math.round(valeur * 100)/100 permet de limiter valeur à seulement 2 chiffres
+         * après la virgule pour que soit plus propre à lire pour l'utiisateur
+         *
          * @param item (produit)
          */
         $scope.getKcalValueForItem = function(item){
-            //Math.round(value * 100) / 100
 
             item.totalCalories = Math.round((item.quantite * item.fields.nf_calories) *100)/100;
             item.totalSel = (typeof(item.fields.nf_sodium) === undefined ) ? null : Math.round((item.quantite * item.fields.nf_sodium/1000)*100)/100;
@@ -137,6 +187,15 @@ angular.module('nutrionixApp.index', ['ngRoute'])
 
         /**
          * Calcule le nombre de calories, sel et graisses saturées pour tout le garde manger
+         *
+         * La fonction réinitialise chaque indicateur du garde-manger puis itère sur chaque produit pour recalculer
+         * les nouvelles valeurs
+         *
+         * Elle met aussi à jour le nombre de calories restantes par rapport au profil défini
+         *
+         * Le Math.round(valeur * 100)/100 permet de limiter valeur à seulement 2 chiffres
+         * après la virgule pour que soit plus propre à lire pour l'utiisateur
+         *
          */
         $scope.getTotalKcal = function(){
             $scope.calRemaining = 0;
@@ -156,7 +215,9 @@ angular.module('nutrionixApp.index', ['ngRoute'])
 
 
         /**
-         * Fonction mettant à jour le profile choisi par l'utilisateur
+         * Fonction mettant à jour le profile choisi par l'utilisateur dans la variable $scope.selectedProfile
+         * Elle met à jour le profil dans le localStorage
+         * et elle met aussi à jour le nombre de calories restantes par rapport au profil choisi
          */
         $scope.update = function(){
             $scope.selectedProfile  = $scope.profiles.filter(function (obj) {
@@ -167,6 +228,9 @@ angular.module('nutrionixApp.index', ['ngRoute'])
             $scope.calRemaining = $scope.selectedProfile.calMax - $scope.totalCaloriesForEverything;
         };
 
-        $scope.getProfiles();
+
+        /**
+         * Appel à la fonction initialisant l'application
+         */
         $scope.init();
     }]);
